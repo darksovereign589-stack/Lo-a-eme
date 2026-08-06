@@ -566,15 +566,15 @@
     </div>
   </div>
 
-  <!-- ANNOY MODAL WITH CUSTOM MESSAGE -->
+  <!-- ANNOY MODAL (DIRECT ON-PAGE UI LOG INSTEAD OF EMAILS) -->
   <div class="modal" id="annoy-modal">
     <div class="modal-content">
       <div style="font-size: 2.5rem; margin-bottom: 10px;">😈</div>
       <h2>Annoy Sudip</h2>
-      <p style="font-size: 0.85rem; margin-bottom: 10px;">Write a custom message to send with the alert:</p>
+      <p style="font-size: 0.85rem; margin-bottom: 10px;">Write a custom message to broadcast directly to the live feed:</p>
       <textarea id="annoy-custom-msg" rows="3" placeholder="I'm bored. Talk to me right now. 😤"></textarea>
       <div class="btn-group" style="margin-top: 15px;">
-        <button class="btn-primary" onclick="executeAnnoy()">❤️ Send Alert</button>
+        <button class="btn-primary" onclick="executeAnnoy()">❤️ Send to Feed</button>
         <button class="btn-secondary" onclick="closeModal('annoy-modal')">Cancel</button>
       </div>
     </div>
@@ -659,8 +659,7 @@
   </div>
 
   <script>
-    /* CONFIGURATION & STATE */
-    const FORMSPREE_URL = "https://formspree.io/f/xljreerv";
+    /* CONFIGURATION & STATE (Formspree removed completely to bypass email limits!) */
     const CONFIG_PIN = "1234";
     const JSONBIN_BIN_ID = "6a732b21da38895dfebcccfe";
     const JSONBIN_API_KEY = "$2a$10$BVumtoj3JvVaoywOPdxUfeb13n/x2xrg5Ad3ZKcz/3WzSlmgDylka";
@@ -920,7 +919,7 @@
       alert("Updated globally! ❤️");
     }
 
-    // --- ANNOY & MOOD MODALS ---
+    // --- ANNOY & MOOD MODALS (FULLY HOSTED VIA JSONBIN FEED - NO FORMSPREE LIMITS!) ---
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
     function openStatusPopup() { openModal('status-modal'); }
@@ -930,23 +929,20 @@
       openModal('annoy-modal');
     }
 
-    function executeAnnoy() {
+    async function executeAnnoy() {
       closeModal('annoy-modal');
       confetti({ particleCount: 50, spread: 70, origin: { y: 0.7 } });
-      const msg = document.getElementById('annoy-custom-msg').value.trim() || "No custom message.";
+      const msg = document.getElementById('annoy-custom-msg').value.trim() || "Annoyed you! Pay attention to me. 😤";
 
-      fetch(FORMSPREE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          title: "❤️ Mrs. Sudip Annoyed You",
-          message: msg,
-          dob: savedWifeyDob,
-          timestamp: new Date().toLocaleString()
-        })
-      }).catch(e => {});
+      const feedItem = {
+        name: "Mrs. Sudip",
+        routine: "😈 Annoy Alert",
+        quote: msg,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
 
-      alert("Alert & message sent to Sudip! ❤️");
+      await saveGlobalSync(feedItem);
+      alert("Alert broadcasted directly to the live feed! ❤️");
     }
 
     function openMoodModal() { openModal('mood-modal'); }
@@ -971,18 +967,6 @@
       };
 
       await saveGlobalSync(feedItem);
-
-      fetch(FORMSPREE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          title: "💖 Mrs. Sudip Sent a Mood Update",
-          mood: `${selectedMoodData.emoji} ${selectedMoodData.name}`,
-          message: customText || "None",
-          timestamp: new Date().toLocaleString()
-        })
-      }).catch(e => {});
-
       alert("Your mood status has been shared globally! ❤️");
     }
 
