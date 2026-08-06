@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,14 +10,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   
-  <!-- Leaflet CSS for Real Interactive Map -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   
   <!-- Canvas Confetti Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
-    :root {
+    /* THEME VARIABLES */
+    :root[data-theme="dark"] {
       --bg-black: #090909;
       --bg-burgundy: #2B0B16;
       --neon-crimson: #ff2a54;
@@ -28,6 +29,21 @@
       --glass-bg: rgba(20, 5, 12, 0.75);
       --glass-border: rgba(255, 42, 84, 0.3);
       --neon-glow: 0 0 35px rgba(255, 42, 84, 0.4);
+      --card-bg: rgba(20, 5, 12, 0.75);
+    }
+
+    :root[data-theme="light"] {
+      --bg-black: #f8fafc;
+      --bg-burgundy: #fdf2f4;
+      --neon-crimson: #e11d48;
+      --crimson-hover: #be123c;
+      --soft-pink: #9f1239;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(225, 29, 72, 0.25);
+      --neon-glow: 0 0 25px rgba(225, 29, 72, 0.15);
+      --card-bg: rgba(255, 255, 255, 0.9);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,20 +55,17 @@
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
+      transition: background 0.5s ease, color 0.5s ease;
     }
 
-    /* AMBIENT CANVAS */
     #ambient-canvas {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       pointer-events: none;
       z-index: 1;
     }
 
-    /* INFINITE FLOODED BUTTERFLIES, HEARTS & FLOWERS */
     .butterfly-container {
       position: fixed;
       inset: 0;
@@ -77,25 +90,30 @@
       100% { transform: translate(110vw, -10vh) scale(0.6) rotate(90deg); opacity: 0; }
     }
 
-    /* MUSIC CONTROLLER */
-    .music-control {
+    /* TOP CONTROLS NAVBAR */
+    .top-controls {
       position: fixed;
       top: 20px;
       right: 20px;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      background: var(--glass-bg);
       border: 1px solid var(--glass-border);
       color: var(--soft-pink);
-      padding: 10px 18px;
+      padding: 10px 16px;
       border-radius: 30px;
       cursor: pointer;
       backdrop-filter: blur(12px);
       font-size: 0.85rem;
       transition: all 0.3s ease;
     }
-    .music-control:hover { background: var(--neon-crimson); color: #fff; }
+    .control-btn:hover { background: var(--neon-crimson); color: #fff; }
 
-    /* OVERLAY SCREEN & VERIFICATION */
+    /* OVERLAY SCREEN */
     .overlay-screen {
       position: fixed;
       inset: 0;
@@ -109,7 +127,7 @@
     }
 
     .v-card {
-      background: var(--glass-bg);
+      background: var(--card-bg);
       border: 1px solid var(--glass-border);
       backdrop-filter: blur(25px);
       border-radius: 28px;
@@ -124,7 +142,6 @@
     }
     .v-card.active { display: block; }
 
-    /* PREMIUM LOADING ANIMATION STYLES */
     .loading-heart-glow {
       font-size: 4rem;
       display: inline-block;
@@ -146,7 +163,6 @@
       50% { transform: scale(1.18); filter: drop-shadow(0 0 25px var(--neon-crimson)); }
     }
 
-    /* FLOWER ICON & SECRET TRIGGER CONTAINER */
     .flower-container {
       position: relative;
       display: inline-block;
@@ -160,7 +176,6 @@
       filter: drop-shadow(0 0 15px var(--neon-crimson));
     }
 
-    /* TYPOGRAPHY */
     h1, h2, h3 {
       font-family: 'Cinzel', serif;
       color: var(--soft-pink);
@@ -170,7 +185,6 @@
 
     p { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.98rem; }
 
-    /* BUTTONS */
     .btn-group { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
     button.btn-primary {
@@ -204,16 +218,15 @@
 
     /* MAIN INTERFACE */
     .app-container {
-      max-width: 600px;
+      max-width: 650px;
       margin: 0 auto;
       padding: 80px 20px 40px 20px;
       position: relative;
       z-index: 10;
     }
 
-    /* DISTANCE & HEADER QUOTE */
-    .distance-card {
-      background: var(--glass-bg);
+    .distance-card, .map-card, .action-card, .global-feed-card, .mood-status-card {
+      background: var(--card-bg);
       border: 1px solid var(--glass-border);
       backdrop-filter: blur(15px);
       border-radius: 24px;
@@ -222,6 +235,7 @@
       margin-bottom: 25px;
       box-shadow: var(--neon-glow);
     }
+    
     .dist-val {
       font-family: 'Cinzel', serif;
       font-size: 2.2rem;
@@ -240,16 +254,6 @@
       transition: opacity 0.5s ease;
     }
 
-    /* REAL LEAFLET MAP CARD */
-    .map-card {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(15px);
-      border-radius: 24px;
-      padding: 1rem;
-      position: relative;
-      margin-bottom: 25px;
-    }
     #map {
       width: 100%;
       height: 240px;
@@ -265,28 +269,17 @@
     .loc-tag { font-weight: 600; color: var(--soft-pink); }
     .loc-sub-tag { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* MAP LINE HEART ANIMATION OVERLAY */
-    @keyframes moveHeartAlongLine {
-      0% { transform: translateY(0px) scale(0.9); }
-      50% { transform: translateY(-8px) scale(1.2); }
-      100% { transform: translateY(0px) scale(0.9); }
-    }
     .traveling-heart-marker {
       font-size: 1.4rem;
       filter: drop-shadow(0 0 8px var(--neon-crimson));
       animation: moveHeartAlongLine 1.5s infinite ease-in-out;
     }
-
-    /* STATUS CARD */
-    .action-card {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(15px);
-      border-radius: 24px;
-      padding: 1.5rem;
-      text-align: center;
-      margin-bottom: 25px;
+    @keyframes moveHeartAlongLine {
+      0% { transform: translateY(0px) scale(0.9); }
+      50% { transform: translateY(-8px) scale(1.2); }
+      100% { transform: translateY(0px) scale(0.9); }
     }
+
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -303,25 +296,55 @@
     .status-dot {
       width: 8px;
       height: 8px;
-      background: var(--neon-crimson);
+      background: #10b981;
       border-radius: 50%;
-      box-shadow: 0 0 10px var(--neon-crimson);
+      box-shadow: 0 0 10px #10b981;
       animation: blink 1.5s infinite;
     }
-    .status-dot.green {
-      background: #10b981;
-      box-shadow: 0 0 10px #10b981;
+
+    /* GLOBAL FEED LIST */
+    .feed-list {
+      max-height: 220px;
+      overflow-y: auto;
+      text-align: left;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .feed-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--soft-pink);
+      font-weight: 600;
+    }
+    .feed-time { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* ACTION BUTTONS */
+    .action-buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 15px;
     }
 
-    /* ANNOY BUTTON */
-    .annoy-btn {
-      width: 100%;
+    .action-btn-custom {
       background: linear-gradient(135deg, #2b020c 0%, var(--neon-crimson) 100%);
       border: 1px solid var(--neon-crimson);
       color: #fff;
-      padding: 16px;
-      border-radius: 22px;
-      font-size: 1.05rem;
+      padding: 14px;
+      border-radius: 18px;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       box-shadow: var(--neon-glow);
@@ -330,13 +353,11 @@
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      animation: heartbeatBtn 3s infinite ease-in-out;
     }
-    .annoy-btn:hover { transform: scale(1.02); }
-    .annoy-btn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
-    .annoy-btn span.sub { font-size: 0.75rem; font-weight: 400; opacity: 0.85; }
+    .action-btn-custom:hover { transform: scale(1.02); }
+    .action-btn-custom span.sub { font-size: 0.7rem; font-weight: 400; opacity: 0.85; }
 
-    /* MODAL POPUPS */
+    /* MODALS */
     .modal {
       position: fixed;
       inset: 0;
@@ -353,141 +374,102 @@
     }
     .modal.open { opacity: 1; pointer-events: auto; }
     .modal-content {
-      background: var(--glass-bg);
+      background: var(--card-bg);
       border: 1px solid var(--glass-border);
       border-radius: 28px;
       padding: 2rem;
-      max-width: 420px;
+      max-width: 440px;
       width: 100%;
       text-align: center;
       box-shadow: var(--neon-glow);
       transform: translateY(20px);
       transition: transform 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .modal.open .modal-content { transform: translateY(0); }
 
-    /* DYNAMIC STATUS ANIMATION CSS GRAPHICS */
-    .status-anim-box {
-      height: 90px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 10px 0;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* 1. Cold Shower */
-    .anim-shower { position: relative; width: 60px; height: 70px; }
-    .shower-head { position: absolute; top: 0; left: 15px; width: 30px; height: 8px; background: #cbd5e1; border-radius: 4px; }
-    .water-drop { position: absolute; width: 3px; height: 12px; background: #38bdf8; border-radius: 50%; animation: fallDrop 0.8s infinite linear; }
-    .water-drop:nth-child(1) { left: 20px; animation-delay: 0s; }
-    .water-drop:nth-child(2) { left: 30px; animation-delay: 0.3s; }
-    .water-drop:nth-child(3) { left: 40px; animation-delay: 0.6s; }
-    .steam-line { position: absolute; bottom: 10px; width: 15px; height: 2px; background: rgba(255,255,255,0.4); border-radius: 2px; animation: riseSteam 1.5s infinite ease-out; }
-    .steam-line:nth-child(4) { left: 15px; animation-delay: 0s; }
-    .steam-line:nth-child(5) { left: 32px; animation-delay: 0.7s; }
-    @keyframes fallDrop { 0% { top: 12px; opacity: 1; } 100% { top: 65px; opacity: 0; } }
-    @keyframes riseSteam { 0% { bottom: 5px; opacity: 0; transform: scaleX(0.5); } 50% { opacity: 0.7; } 100% { bottom: 45px; opacity: 0; transform: scaleX(1.5); } }
-
-    /* 2. Lunch */
-    .anim-lunch { position: relative; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; }
-    .lunch-plate { width: 50px; height: 20px; background: #e2e8f0; border-radius: 0 0 25px 25px; position: absolute; bottom: 15px; }
-    .lunch-fork { font-size: 2rem; position: absolute; bottom: 18px; animation: moveFork 1.2s infinite ease-in-out; }
-    .lunch-steam { position: absolute; top: 15px; width: 2px; height: 15px; background: var(--soft-pink); border-radius: 2px; animation: riseSteam 1.2s infinite ease-out; }
-    .lunch-steam:nth-child(1) { left: 30px; animation-delay: 0.2s; }
-    .lunch-steam:nth-child(2) { left: 40px; animation-delay: 0.5s; }
-    @keyframes moveFork { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-15deg) translateY(-5px); } }
-
-    /* 3. Working / Coding */
-    .anim-working { font-size: 2.8rem; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .typing-cursor { display: inline-block; width: 10px; height: 32px; background: var(--neon-crimson); animation: blinkCursor 0.8s infinite; }
-    @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-    /* 4. Driving */
-    .anim-driving { position: relative; width: 100px; height: 60px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .drive-car { font-size: 2.2rem; position: absolute; z-index: 2; animation: bounceCar 0.5s infinite alternate; }
-    .road-line { position: absolute; bottom: 10px; width: 120px; height: 3px; background: #fff; border-radius: 2px; animation: moveRoad 0.6s infinite linear; }
-    @keyframes bounceCar { 0% { transform: translateY(0); } 100% { transform: translateY(-2px); } }
-    @keyframes moveRoad { 0% { transform: translateX(40px); } 100% { transform: translateX(-40px); } }
-
-    /* 5. Gym */
-    .anim-gym { font-size: 2.5rem; animation: liftDumbbell 1s infinite ease-in-out; }
-    @keyframes liftDumbbell { 0%, 100% { transform: translateY(10px) scale(0.95); } 50% { transform: translateY(-10px) scale(1.05); } }
-
-    /* 6. Sleeping */
-    .anim-sleeping { position: relative; font-size: 2.2rem; display: flex; align-items: center; justify-content: center; }
-    .z-float { position: absolute; font-size: 1rem; color: var(--soft-pink); font-weight: bold; animation: floatZ 2s infinite linear; }
-    .z-float:nth-child(1) { right: 20px; animation-delay: 0s; }
-    .z-float:nth-child(2) { right: 5px; animation-delay: 1s; font-size: 1.3rem; }
-    @keyframes floatZ { 0% { transform: translate(0, 10px) scale(0.6); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(15px, -25px) scale(1.2); opacity: 0; } }
-
-    /* 7. Music */
-    .anim-music { position: relative; font-size: 2.5rem; display: flex; align-items: center; justify-content: center; }
-    .vinyl-record { display: inline-block; animation: spinVinyl 3s infinite linear; }
-    .note-float { position: absolute; font-size: 1.1rem; animation: floatNote 1.8s infinite ease-out; }
-    @keyframes spinVinyl { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes floatNote { 0% { transform: translate(0, 5px); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(25px, -30px); opacity: 0; } }
-
-    /* Admin Dashboard Grid */
-    .admin-grid {
+    /* ROUTINE SELECTOR GRID */
+    .routine-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
-      max-height: 200px;
+      max-height: 240px;
       overflow-y: auto;
-      margin: 15px 0;
+      margin: 10px 0;
     }
-    .admin-item {
+    .routine-item {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 8px;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 0.8rem;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .admin-item:hover { border-color: var(--neon-crimson); background: rgba(255, 42, 84, 0.2); }
+    .routine-item:hover, .routine-item.active { border-color: var(--neon-crimson); background: rgba(255, 42, 84, 0.25); }
 
-    /* KEYFRAMES */
-    @keyframes floatFlower {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(5deg); }
+    /* MOOD SELECTOR GRID */
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 12px 0;
     }
+    .mood-option {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 8px;
+      cursor: pointer;
+      font-size: 1.3rem;
+      transition: all 0.2s ease;
+    }
+    .mood-option:hover, .mood-option.selected { background: rgba(255, 42, 84, 0.3); border-color: var(--neon-crimson); transform: scale(1.05); }
+
+    /* INPUT FIELDS */
+    input[type="text"], input[type="password"], input[type="date"], textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-top: 4px;
+    }
+    textarea { resize: none; }
+
     @keyframes springIn {
       0% { opacity: 0; transform: scale(0.85) translateY(30px); }
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     @keyframes blink { 50% { opacity: 0.3; } }
-    @keyframes heartbeatBtn {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 42, 84, 0.7); }
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
-    }
   </style>
 
-  <!-- Leaflet JS Script -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
 
-  <!-- AMBIENT PARTICLES CANVAS -->
+  <!-- AMBIENT PARTICLES -->
   <canvas id="ambient-canvas"></canvas>
-
-  <!-- INFINITE FLOODED BUTTERFLIES, HEARTS & FLOWERS -->
   <div class="butterfly-container" id="butterfly-container"></div>
 
-  <!-- RESTORED ORIGINAL WORKING AUDIO -->
+  <!-- AUDIO & NAVBAR CONTROLS -->
   <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3"></audio>
-  <button class="music-control" id="music-toggle-btn" onclick="toggleMusic()">🎵 Music Off</button>
+  
+  <div class="top-controls">
+    <button class="control-btn" id="theme-toggle-btn" onclick="toggleTheme()">☀️ Theme</button>
+    <button class="control-btn" id="music-toggle-btn" onclick="toggleMusic()">🎵 Music Off</button>
+  </div>
 
-  <!-- MULTI-STEP VERIFICATION OVERLAY -->
+  <!-- VERIFICATION OVERLAY -->
   <div class="overlay-screen" id="overlay">
-    
-    <!-- STEP 1: PREMIUM LOADING SCREEN WITH SECRET FLOWER TRIGGER (8 TAPS) -->
     <div class="v-card active" id="v-step1">
       <div class="flower-container" onclick="handleFlowerClick()" title="Touch me...">
         <div class="flower-icon">🌸</div>
@@ -501,18 +483,16 @@
       </div>
     </div>
 
-    <!-- STEP 2: EXACT DOB VERIFICATION -->
     <div class="v-card" id="v-step2">
       <h1>Identity Check 🎀</h1>
-      <p>Enter your exact Date of Birth (No wrong inputs, fooling him is impossible!):</p>
-      <input type="date" id="wifey-dob-input" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; padding: 12px; border-radius: 12px; text-align: center; width: 90%; font-size: 1.1rem; margin-bottom: 20px; font-family: 'Plus Jakarta Sans', sans-serif;">
+      <p>Enter your exact Date of Birth:</p>
+      <input type="date" id="wifey-dob-input" style="text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
       <div class="btn-group">
         <button class="btn-primary" onclick="verifyWifeyDob()">Verify ❤️</button>
         <button class="btn-secondary" onclick="denyAccess()">🤍 No</button>
       </div>
     </div>
 
-    <!-- STEP 3 -->
     <div class="v-card" id="v-step3">
       <h1>Final Verification 🌹</h1>
       <p>"This world belongs to Sudip and was created only for Mrs. Sudip."</p>
@@ -520,10 +500,9 @@
         <button class="btn-primary" onclick="playAudio(); enterWorld();">Enter My World ❤️</button>
       </div>
     </div>
-
   </div>
 
-  <!-- MAIN LIVE TRACKER INTERFACE -->
+  <!-- MAIN DASHBOARD -->
   <div class="app-container">
     
     <!-- DISTANCE & ROTATING QUOTE -->
@@ -533,7 +512,7 @@
       <div class="quote-box" id="quote-display">"Distance only measures roads, never hearts."</div>
     </div>
 
-    <!-- REAL MAP CONNECTION CARD -->
+    <!-- LEAFLET MAP -->
     <div class="map-card">
       <div id="map"></div>
       <div class="map-footer">
@@ -548,55 +527,99 @@
       </div>
     </div>
 
-    <!-- LIVE STATUS DISPLAY CARD -->
+    <!-- LIVE STATUS & PUBLIC FEED CARD -->
     <div class="action-card">
       <div class="status-badge" onclick="openStatusPopup()">
-        <div class="status-dot" id="status-dot-indicator"></div>
+        <div class="status-dot"></div>
         <span id="status-title-display">Status: Free</span>
       </div>
       <p id="status-quote-display">"He is free, Definitely thinking about you."</p>
-      <button class="btn-secondary" style="font-size: 0.8rem; padding: 6px 16px;" onclick="openStatusPopup()">View Status Popup ✨</button>
+      
+      <div style="margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 12px;">
+        <h3 style="font-size: 0.95rem; margin-bottom: 6px;">🌍 Public Activity Feed</h3>
+        <div class="feed-list" id="public-feed-list">
+          <!-- Dynamically populated real-time feed -->
+        </div>
+      </div>
     </div>
 
-    <!-- ANNOY HIM BUTTON -->
-    <button class="annoy-btn" id="annoy-trigger" onclick="initiateAnnoy()">
-      <span>😈 Annoy Him</span>
-      <span class="sub" id="annoy-sub-text">Warning: Don't press this while he's working.</span>
-    </button>
+    <!-- DUAL ACTION BUTTONS: ANNOY & MOOD STATUS -->
+    <div class="action-buttons-grid">
+      <button class="action-btn-custom" id="annoy-trigger" onclick="openAnnoyModal()">
+        <span>😈 Annoy Him</span>
+        <span class="sub">Send instant alert</span>
+      </button>
+      <button class="action-btn-custom" onclick="openMoodModal()" style="background: linear-gradient(135deg, #1b092b 0%, #7c3aed 100%); border-color: #7c3aed;">
+        <span>💖 Send Mood</span>
+        <span class="sub">Share your feelings</span>
+      </button>
+    </div>
 
   </div>
 
   <!-- STATUS POPUP MODAL -->
   <div class="modal" id="status-modal">
     <div class="modal-content">
-      <div class="status-anim-box" id="modal-anim-container">
-        <!-- Dynamically injected dynamic graphics -->
-      </div>
       <h2 id="modal-title">Free</h2>
       <p id="modal-quote">"He is free, Definitely thinking about you."</p>
       <button class="btn-secondary" onclick="closeModal('status-modal')">Close</button>
     </div>
   </div>
 
-  <!-- ANNOY CONFIRMATION MODAL -->
+  <!-- ANNOY MODAL WITH CUSTOM MESSAGE -->
   <div class="modal" id="annoy-modal">
     <div class="modal-content">
       <div style="font-size: 2.5rem; margin-bottom: 10px;">😈</div>
-      <h2>Annoy Sudip?</h2>
-      <p id="annoy-prompt-text">Are you sure you want to annoy Sudip right now?</p>
-      <div class="btn-group">
-        <button class="btn-primary" id="annoy-confirm-btn" onclick="executeAnnoy()">❤️ Yes, Annoy Him</button>
-        <button class="btn-secondary" onclick="closeModal('annoy-modal')">🤍 Never Mind</button>
+      <h2>Annoy Sudip</h2>
+      <p style="font-size: 0.85rem; margin-bottom: 10px;">Write a custom message to send with the alert:</p>
+      <textarea id="annoy-custom-msg" rows="3" placeholder="I'm bored. Talk to me right now. 😤"></textarea>
+      <div class="btn-group" style="margin-top: 15px;">
+        <button class="btn-primary" onclick="executeAnnoy()">❤️ Send Alert</button>
+        <button class="btn-secondary" onclick="closeModal('annoy-modal')">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- HIDDEN ADMIN LOGIN MODAL -->
+  <!-- MOOD STATUS MODAL -->
+  <div class="modal" id="mood-modal">
+    <div class="modal-content">
+      <div style="font-size: 2.5rem; margin-bottom: 5px;">💖</div>
+      <h2>Send Mood Status</h2>
+      <p style="font-size: 0.85rem; margin-bottom: 8px;">Select your current mood:</p>
+      
+      <div class="mood-grid" id="mood-grid-container">
+        <div class="mood-option" onclick="selectMood('🥰', 'In Love')">🥰</div>
+        <div class="mood-option" onclick="selectMood('😊', 'Happy')">😊</div>
+        <div class="mood-option" onclick="selectMood('😔', 'Sad')">😔</div>
+        <div class="mood-option" onclick="selectMood('😭', 'Crying')">😭</div>
+        <div class="mood-option" onclick="selectMood('😴', 'Sleepy')">😴</div>
+        <div class="mood-option" onclick="selectMood('😡', 'Angry')">😡</div>
+        <div class="mood-option" onclick="selectMood('🤗', 'Need Hug')">🤗</div>
+        <div class="mood-option" onclick="selectMood('😘', 'Missing You')">😘</div>
+        <div class="mood-option" onclick="selectMood('😶', 'Busy')">😶</div>
+        <div class="mood-option" onclick="selectMood('🤒', 'Sick')">🤒</div>
+        <div class="mood-option" onclick="selectMood('🥺', 'Want Attention')">🥺</div>
+        <div class="mood-option" onclick="selectMood('❤️', 'Thinking About You')">❤️</div>
+      </div>
+
+      <div style="text-align: left; margin-top: 10px;">
+        <label style="font-size: 0.8rem; color: var(--soft-pink);">Short Message (Optional):</label>
+        <input type="text" id="mood-msg-input" placeholder="Please text me when you're free.">
+      </div>
+
+      <div class="btn-group" style="margin-top: 15px;">
+        <button class="btn-primary" onclick="submitMoodStatus()">Send Mood ❤️</button>
+        <button class="btn-secondary" onclick="closeModal('mood-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
   <div class="modal" id="admin-login-modal">
     <div class="modal-content" id="admin-login-card">
       <h2>Admin Access</h2>
       <p>Enter secret Security PIN:</p>
-      <input type="password" id="admin-pin-input" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; padding: 10px; border-radius: 12px; text-align: center; width: 80%; font-size: 1.2rem; margin-bottom: 15px;" placeholder="••••">
+      <input type="password" id="admin-pin-input" style="text-align: center; font-size: 1.2rem; margin-bottom: 15px;" placeholder="••••">
       <div class="btn-group">
         <button class="btn-primary" onclick="verifyAdminPin()">Login</button>
         <button class="btn-secondary" onclick="closeModal('admin-login-modal')">Cancel</button>
@@ -606,33 +629,31 @@
 
   <!-- ADMIN DASHBOARD MODAL -->
   <div class="modal" id="admin-dashboard-modal">
-    <div class="modal-content" style="max-width: 460px;">
+    <div class="modal-content" style="max-width: 480px;">
       <h2>Admin Control Panel</h2>
-      <p style="font-size: 0.8rem; margin-bottom: 5px;">Update Sudip's Activity Live:</p>
+      <p style="font-size: 0.8rem; margin-bottom: 5px;">Select or Create Routine:</p>
       
-      <div class="admin-grid" id="admin-status-list"></div>
+      <div class="routine-grid" id="admin-routine-list"></div>
+
+      <!-- CREATE CUSTOM ROUTINE -->
+      <div style="margin: 10px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; text-align: left;">
+        <label style="font-size: 0.8rem; color: var(--soft-pink);">➕ Create Custom Routine:</label>
+        <div style="display: flex; gap: 6px; margin-top: 6px;">
+          <input type="text" id="custom-routine-emoji" placeholder="Emoji" style="width: 50px; text-align: center;">
+          <input type="text" id="custom-routine-name" placeholder="Routine Name" style="flex: 1;">
+        </div>
+        <input type="text" id="custom-routine-quote" placeholder="Matching Quote" style="margin-top: 6px;">
+        <button class="btn-primary" style="width: 100%; margin-top: 8px; font-size: 0.85rem; padding: 8px;" onclick="addCustomRoutine()">Add Custom Routine</button>
+      </div>
 
       <div style="margin: 10px 0; text-align: left;">
-        <label style="font-size: 0.8rem; color: var(--soft-pink);">Edit Quote for Selected Status:</label>
-        <input type="text" id="admin-quote-input" style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px; margin-top: 4px; font-size: 0.85rem;">
+        <label style="font-size: 0.8rem; color: var(--soft-pink);">Edit Quote for Selected Routine:</label>
+        <input type="text" id="admin-quote-input" style="margin-top: 4px;">
       </div>
-
-      <!-- SAVED WIFEY DOB DISPLAY IN CONTROL PANEL -->
-      <div style="margin: 12px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; text-align: left;">
-        <span style="font-size: 0.85rem; color: var(--soft-pink); display: block; margin-bottom: 4px;">Mrs. Sudip's Saved Date of Birth:</span>
-        <input type="text" id="admin-saved-dob" readonly style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; padding: 6px; border-radius: 6px; font-size: 0.85rem; text-align: center;" value="Not entered yet">
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px;">
-        <span style="font-size: 0.85rem;">Receive 'Annoy Him' Notifications:</span>
-        <button class="btn-secondary" id="toggle-notif-btn" style="padding: 4px 12px; font-size: 0.8rem;" onclick="toggleNotifications()">ON</button>
-      </div>
-
-      <p style="font-size: 0.7rem; color: var(--text-muted);" id="last-updated-time">Last Updated: Just now</p>
 
       <div class="btn-group" style="margin-top: 15px;">
-        <button class="btn-primary" onclick="saveAdminChanges()">Save & Update</button>
-        <button class="btn-secondary" onclick="closeModal('admin-dashboard-modal')">Logout</button>
+        <button class="btn-primary" onclick="saveAdminChanges()">Save & Sync Globally 🚀</button>
+        <button class="btn-secondary" onclick="closeModal('admin-dashboard-modal')">Close</button>
       </div>
     </div>
   </div>
@@ -640,107 +661,82 @@
   <script>
     /* CONFIGURATION & STATE */
     const FORMSPREE_URL = "https://formspree.io/f/xljreerv";
-    let CONFIG_PIN = "1234"; 
-    let notificationsEnabled = true;
-    let failedPinAttempts = 0;
+    const CONFIG_PIN = "1234";
+    const JSONBIN_BIN_ID = "6a732b21da38895dfebcccfe";
+    const JSONBIN_API_KEY = "$2a$10$BVumtoj3JvVaoywOPdxUfeb13n/x2xrg5Ad3ZKcz/3WzSlmgDylka";
+
     let savedWifeyDob = localStorage.getItem('sudip_wifey_dob') || "Not entered yet";
+    let currentTheme = localStorage.getItem('sudip_theme') || "dark";
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.getElementById('theme-toggle-btn').innerText = currentTheme === 'dark' ? "☀️ Light" : "🌙 Dark";
 
-    // --- JSONBIN.IO CLOUD SYNC CONFIGURATION ---
-    const JSONBIN_BIN_ID = "6a732b21da38895dfebcccfe";       
-    const JSONBIN_API_KEY = "$2a$10$BVumtoj3JvVaoywOPdxUfeb13n/x2xrg5Ad3ZKcz/3WzSlmgDylka";   
+    let selectedMoodData = { emoji: "🥰", name: "In Love" };
 
-    /* STATUS DATABASE WITH GRAPHIC HTML RENDERERS */
-    const STATUS_DATA = {
-      "Free": { 
-        html: `<div style="font-size: 2.8rem; animation: heartbeatBtn 1.5s infinite;">💚✨</div>`, 
-        quote: "He is free, Definitely thinking about you." 
-      },
-      "Cold Shower": { 
-        html: `<div class="anim-shower"><div class="shower-head"></div><div class="water-drop"></div><div class="water-drop"></div><div class="water-drop"></div><div class="steam-line"></div><div class="steam-line"></div></div>`, 
-        quote: "Shh... He's taking a cold shower. Give him a little time. He'll be back soon." 
-      },
-      "Breakfast": { 
-        html: `<div class="anim-lunch"><div class="lunch-plate"></div><div class="lunch-fork">🍞</div><div class="lunch-steam"></div><div class="lunch-steam"></div></div>`, 
-        quote: "Starting the day with breakfast... Hopefully your smile is part of it too." 
-      },
-      "Lunch": { 
-        html: `<div class="anim-lunch"><div class="lunch-plate"></div><div class="lunch-fork">🍽️</div><div class="lunch-steam"></div><div class="lunch-steam"></div></div>`, 
-        quote: "He's having lunch right now... But thoughts of you never leave the table." 
-      },
-      "Dinner": { 
-        html: `<div style="font-size: 2.5rem; animation: floatFlower 3s infinite ease-in-out;">🕯️🍷</div>`, 
-        quote: "Ending the day... Wishing the chair across the table wasn't empty." 
-      },
-      "Working": { 
-        html: `<div class="anim-working">💻<span class="typing-cursor"></span></div>`, 
-        quote: "He's handling something important. He'll return as soon as he's done." 
-      },
-      "Driving": { 
-        html: `<div class="anim-driving"><div class="drive-car">🚗</div><div class="road-line"></div></div>`, 
-        quote: "Eyes on the road. Heart with Mrs. Sudip." 
-      },
-      "Gym": { 
-        html: `<div class="anim-gym">🏋️‍♂️</div>`, 
-        quote: "Building strength today... Thinking of tomorrow." 
-      },
-      "Sleeping": { 
-        html: `<div class="anim-sleeping">🌙<span class="z-float">Z</span><span class="z-float">z</span></div>`, 
-        quote: "He's asleep now. Even his dreams remember you." 
-      },
-      "Reading": { 
-        html: `<div style="font-size: 2.5rem; animation: floatFlower 3s infinite;">📖✨</div>`, 
-        quote: "One chapter ends. Another begins." 
-      },
-      "Coding": { 
-        html: `<div class="anim-working">⚡💻<span class="typing-cursor"></span></div>`, 
-        quote: "Creating something meaningful... One line at a time." 
-      },
-      "Walking": { 
-        html: `<div style="font-size: 2.5rem; animation: heartbeatBtn 2s infinite;">🍂👣</div>`, 
-        quote: "Sometimes the quietest walks hold the loudest thoughts." 
-      },
-      "Listening to Music": { 
-        html: `<div class="anim-music"><span class="vinyl-record">💿</span><span class="note-float">🎶</span></div>`, 
-        quote: "Every melody reminds him of someone special." 
-      },
-      "Chilling with Friends": { 
-        html: `<div style="font-size: 2.5rem;">☕🗣️</div>`, 
-        quote: "He's spending time with friends. He'll catch up with you later." 
-      }
+    /* EXPANDED DEFAULT ROUTINES DATABASE */
+    let ROUTINES_DATA = {
+      "Free": { emoji: "💚", quote: "He is free, Definitely thinking about you." },
+      "Studying": { emoji: "📚", quote: "Deep into books, but your face is on every page." },
+      "Working": { emoji: "💻", quote: "Handling important business. He'll return shortly." },
+      "Sleeping": { emoji: "😴", quote: "Asleep now, even his dreams remember you." },
+      "Gym": { emoji: "🏋️", quote: "Building strength today, thinking of tomorrow." },
+      "Meditation": { emoji: "🧘", quote: "Finding inner peace, and you are right at the center." },
+      "Walking": { emoji: "🚶", quote: "Quiet steps, loud thoughts about you." },
+      "At a Café": { emoji: "☕", quote: "Sipping coffee, wishing you were sitting across." },
+      "At a Restaurant": { emoji: "🍽️", quote: "Enjoying a meal, saving space for your sweet texts." },
+      "Watching Movies": { emoji: "🎬", quote: "Watching a film, but distracted by memories of you." },
+      "Gaming": { emoji: "🎮", quote: "In a gaming match, pausing mentally for you." },
+      "Traveling": { emoji: "🚗", quote: "Eyes on the road, heart with Mrs. Sudip." },
+      "Shopping": { emoji: "🛍️", quote: "Out shopping, wondering what you would like." },
+      "Listening to Music": { emoji: "🎵", quote: "Every melody reminds him of someone special." },
+      "Reading": { emoji: "📖", quote: "One chapter ends, another begins." },
+      "Enjoying Rain": { emoji: "🌧️", quote: "Rain drops falling, whispering your name." },
+      "Watching Sunset": { emoji: "🌅", quote: "Watching the sun go down until tomorrow." },
+      "Chilling with Friends": { emoji: "👫", quote: "Out with friends, but his mind is with you." },
+      "Aawargardi": { emoji: "🚶‍♂️", quote: "Wandering around freely, destination is always your heart." },
+      "Missing Someone": { emoji: "❤️", quote: "Distance means nothing when someone means everything." },
+      "Busy": { emoji: "📱", quote: "Busy right now, will text you back very soon." },
+      "Relaxing": { emoji: "😌", quote: "Taking a deep breath and resting up." },
+      "Night Walk": { emoji: "🌙", quote: "Strolling under the moon and stars." },
+      "At Home": { emoji: "🏠", quote: "Safe at home, thinking of you." }
     };
 
-    let currentStatusKey = "Free";
-    let mapInitialized = false;
-    let map;
+    let currentRoutineKey = "Free";
+    let publicFeed = [];
 
-    // --- FETCH GLOBAL STATUS ON PAGE LOAD ---
-    async function fetchGlobalStatus() {
+    // --- FETCH GLOBAL DATA ---
+    async function fetchGlobalData() {
       try {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
           headers: { 'X-Master-Key': JSONBIN_API_KEY }
         });
         const data = await response.json();
-        if (data && data.record && data.record.status) {
-          currentStatusKey = data.record.status;
-          if (data.record.quote && STATUS_DATA[currentStatusKey]) {
-            STATUS_DATA[currentStatusKey].quote = data.record.quote;
+        if (data && data.record) {
+          if (data.record.routines) {
+            ROUTINES_DATA = data.record.routines;
           }
-          updateStatusUI();
+          if (data.record.status) {
+            currentRoutineKey = data.record.status;
+          }
+          if (data.record.feed) {
+            publicFeed = data.record.feed;
+          }
+          updateUI();
         }
       } catch (e) {
-        console.log("Using default local status cache.");
+        console.log("Using local cache.");
       }
     }
 
-    // Call fetch on startup and auto-refresh every 10 seconds for real-time sync
-    fetchGlobalStatus();
-    setInterval(fetchGlobalStatus, 10000);
+    fetchGlobalData();
+    setInterval(fetchGlobalData, 8000);
 
-    // --- SAVE STATUS GLOBALLY ---
-    async function saveAdminChanges() {
-      const newQuote = document.getElementById('admin-quote-input').value;
-      STATUS_DATA[currentStatusKey].quote = newQuote;
-      
+    // --- SYNC GLOBALLY ---
+    async function saveGlobalSync(newFeedItem = null) {
+      if (newFeedItem) {
+        publicFeed.unshift(newFeedItem);
+        if (publicFeed.length > 15) publicFeed.pop();
+      }
+
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
@@ -749,331 +745,252 @@
             'X-Master-Key': JSONBIN_API_KEY
           },
           body: JSON.stringify({
-            status: currentStatusKey,
-            quote: newQuote
+            status: currentRoutineKey,
+            routines: ROUTINES_DATA,
+            feed: publicFeed
           })
         });
       } catch (e) {
-        console.error("Failed to sync status to cloud:", e);
+        console.error("Cloud sync failed:", e);
       }
-
-      updateStatusUI();
-      document.getElementById('last-updated-time').innerText = "Last Updated: " + new Date().toLocaleTimeString();
-      closeModal('admin-dashboard-modal');
-      alert("Status updated globally for everyone! ❤️");
+      updateUI();
     }
 
-    /* INFINITE FLOODED BUTTERFLIES, HEARTS & FLOWERS GENERATOR */
-    function initFloodedButterflies() {
-      const container = document.getElementById('butterfly-container');
-      const icons = ['🦋', '❤️', '🌸', '✨', '💖', '🌹', '🦋'];
-      for (let i = 0; i < 40; i++) {
-        const el = document.createElement('div');
-        el.className = 'butterfly';
-        el.innerText = icons[Math.floor(Math.random() * icons.length)];
-        el.style.left = Math.random() * 100 + 'vw';
-        el.style.animationDuration = (8 + Math.random() * 12) + 's';
-        el.style.animationDelay = (Math.random() * 10) + 's';
-        el.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
-        container.appendChild(el);
-      }
-    }
-    initFloodedButterflies();
+    function updateUI() {
+      const routine = ROUTINES_DATA[currentRoutineKey] || { emoji: "✨", quote: "Thinking of you." };
+      document.getElementById('status-title-display').innerText = `Status: ${currentRoutineKey} ${routine.emoji}`;
+      document.getElementById('status-quote-display').innerText = `"${routine.quote}"`;
+      document.getElementById('modal-title').innerText = `${routine.emoji} ${currentRoutineKey}`;
+      document.getElementById('modal-quote').innerText = `"${routine.quote}"`;
 
-    /* ORIGINAL WORKING AUDIO CONTROLLER */
-    const music = document.getElementById('bg-music');
-    const musicBtn = document.getElementById('music-toggle-btn');
-    let isPlaying = false;
-
-    function playAudio() {
-      music.play().then(() => {
-        isPlaying = true;
-        musicBtn.innerText = "🎵 Music On";
-      }).catch((e) => {
-        console.log("Audio waiting for user interaction:", e);
-      });
-    }
-
-    function toggleMusic() {
-      if (isPlaying) {
-        music.pause();
-        musicBtn.innerText = "🎵 Music Off";
-        isPlaying = false;
+      // Render Feed
+      const feedContainer = document.getElementById('public-feed-list');
+      feedContainer.innerHTML = "";
+      if (publicFeed.length === 0) {
+        feedContainer.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); text-align:center;">No recent activities yet.</div>`;
       } else {
-        playAudio();
+        publicFeed.forEach(item => {
+          const div = document.createElement('div');
+          div.className = "feed-item";
+          div.innerHTML = `
+            <div class="feed-header">
+              <span>${item.name} (${item.routine})</span>
+              <span class="feed-time">${item.time}</span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-main);">"${item.quote}"</div>
+          `;
+          feedContainer.appendChild(div);
+        });
       }
     }
 
-    document.addEventListener('click', function autoPlayOnce() {
-      if (!isPlaying) {
-        playAudio();
-      }
-      document.removeEventListener('click', autoPlayOnce);
-    }, { once: true });
+    // --- THEME & AUDIO ---
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('sudip_theme', currentTheme);
+      document.getElementById('theme-toggle-btn').innerText = currentTheme === 'dark' ? "☀️ Light" : "🌙 Dark";
+    }
 
-    /* INITIALIZE LEAFLET MAP */
+    const music = document.getElementById('bg-music');
+    let isPlaying = false;
+    function playAudio() {
+      music.play().then(() => { isPlaying = true; document.getElementById('music-toggle-btn').innerText = "🎵 Music On"; }).catch(e => {});
+    }
+    function toggleMusic() {
+      if (isPlaying) { music.pause(); document.getElementById('music-toggle-btn').innerText = "🎵 Music Off"; isPlaying = false; }
+      else { playAudio(); }
+    }
+    document.addEventListener('click', () => { if (!isPlaying) playAudio(); }, { once: true });
+
+    // --- MAP ---
+    let mapInitialized = false, map;
     function initMap() {
       if (mapInitialized) return;
       mapInitialized = true;
-
       const sudipCoord = [30.0869, 78.2676];
       const wifeyCoord = [33.8545, 71.9320];
 
       map = L.map('map', { zoomControl: false, attributionControl: false }).setView([31.9, 75.1], 5);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 10,
-        subdomains: 'abcd'
-      }).addTo(map);
+      const pin = L.divIcon({ html: '<div style="background: #ff2a54; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff;"></div>', iconSize: [14, 14] });
+      L.marker(sudipCoord, { icon: pin }).addTo(map);
+      L.marker(wifeyCoord, { icon: pin }).addTo(map);
 
-      const crimsonIcon = L.divIcon({
-        className: 'custom-map-pin',
-        html: '<div style="background: #ff2a54; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 12px #ff2a54; border: 2px solid #fff;"></div>',
-        iconSize: [14, 14]
-      });
+      const polyline = L.polyline([sudipCoord, [32.5, 75.0], wifeyCoord], { color: '#ff2a54', weight: 3, dashArray: '6, 6' }).addTo(map);
+      const heartMarker = L.marker([31.97, 75.10], { icon: L.divIcon({ className: '', html: '<div class="traveling-heart-marker">❤️</div>', iconSize: [24, 24] }) }).addTo(map);
 
-      L.marker(sudipCoord, { icon: crimsonIcon }).addTo(map).bindPopup("<b>Sudip</b><br>Rishikesh, India");
-      L.marker(wifeyCoord, { icon: crimsonIcon }).addTo(map).bindPopup("<b>Mrs. Sudip</b><br>Saleh Khana, Pakistan");
-
-      const latlngs = [sudipCoord, [32.5, 75.0], wifeyCoord];
-      const polyline = L.polyline(latlngs, { color: '#ff2a54', weight: 3, dashArray: '6, 6', opacity: 0.8 }).addTo(map);
-
-      const heartDivIcon = L.divIcon({
-        className: '',
-        html: '<div class="traveling-heart-marker">❤️</div>',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-      const midCoord = [31.97, 75.10];
-      const travelingHeartMarker = L.marker(midCoord, { icon: heartDivIcon }).addTo(map);
-
-      let progress = 0;
-      let direction = 1;
+      let p = 0, dir = 1;
       setInterval(() => {
-        progress += 0.03 * direction;
-        if (progress >= 1 || progress <= 0) {
-          direction *= -1;
-        }
-        const curLat = sudipCoord[0] + (wifeyCoord[0] - sudipCoord[0]) * progress;
-        const curLng = sudipCoord[1] + (wifeyCoord[1] - sudipCoord[1]) * progress;
-        travelingHeartMarker.setLatLng([curLat, curLng]);
+        p += 0.03 * dir;
+        if (p >= 1 || p <= 0) dir *= -1;
+        heartMarker.setLatLng([sudipCoord[0] + (wifeyCoord[0] - sudipCoord[0]) * p, sudipCoord[1] + (wifeyCoord[1] - sudipCoord[1]) * p]);
       }, 80);
-
       map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
     }
 
+    // --- VERIFICATION ---
     function nextVStep(step) {
-      document.querySelectorAll('.v-card').forEach(card => card.classList.remove('active'));
+      document.querySelectorAll('.v-card').forEach(c => c.classList.remove('active'));
       document.getElementById('v-step' + step).classList.add('active');
     }
-
     function verifyWifeyDob() {
-      const dobVal = document.getElementById('wifey-dob-input').value;
-      if (!dobVal) {
-        alert("Please select your date of birth!");
-        return;
-      }
-      savedWifeyDob = dobVal;
-      localStorage.setItem('sudip_wifey_dob', savedWifeyDob);
-      playAudio();
+      const dob = document.getElementById('wifey-dob-input').value;
+      if (!dob) { alert("Please select your date of birth!"); return; }
+      savedWifeyDob = dob;
+      localStorage.setItem('sudip_wifey_dob', dob);
       nextVStep(3);
     }
-
-    function denyAccess() {
-      alert("This page is reserved exclusively for Mrs. Sudip. Fooling him is impossible!");
-      nextVStep(1);
-    }
-
+    function denyAccess() { alert("Reserved exclusively for Mrs. Sudip!"); nextVStep(1); }
     function enterWorld() {
-      playAudio();
-      const overlay = document.getElementById('overlay');
-      overlay.style.opacity = '0';
+      document.getElementById('overlay').style.opacity = '0';
       setTimeout(() => {
-        overlay.style.visibility = 'hidden';
+        document.getElementById('overlay').style.visibility = 'hidden';
         initMap();
         setTimeout(() => map.invalidateSize(), 200);
-      }, 1000);
+      }, 800);
     }
 
-    /* SECRET ADMIN TRIGGER */
+    // --- SECRET ADMIN TRIGGER ---
     let flowerClicks = 0;
-    let flowerTimer = null;
-
     function handleFlowerClick() {
       flowerClicks++;
-      confetti({ particleCount: 8, spread: 40, origin: { y: 0.3 }, colors: ['#ffb3c1', '#ff2a54'] });
-
-      if (flowerClicks === 1) {
-        flowerTimer = setTimeout(() => { flowerClicks = 0; }, 5000);
-      }
+      confetti({ particleCount: 10, spread: 40, origin: { y: 0.3 } });
       if (flowerClicks >= 8) {
-        clearTimeout(flowerTimer);
         flowerClicks = 0;
         openModal('admin-login-modal');
       }
     }
 
     function verifyAdminPin() {
-      const pinInput = document.getElementById('admin-pin-input').value;
-      const card = document.getElementById('admin-login-card');
-
-      if (pinInput === CONFIG_PIN) {
-        failedPinAttempts = 0;
+      if (document.getElementById('admin-pin-input').value === CONFIG_PIN) {
         document.getElementById('admin-pin-input').value = "";
         closeModal('admin-login-modal');
         setupAdminGrid();
         openModal('admin-dashboard-modal');
-      } else {
-        failedPinAttempts++;
-        card.style.animation = "shake 0.4s ease";
-        setTimeout(() => card.style.animation = "", 400);
-
-        if (failedPinAttempts >= 3) {
-          alert("Too many failed attempts!");
-          failedPinAttempts = 0;
-          document.getElementById('admin-pin-input').value = "";
-          closeModal('admin-login-modal');
-        }
-      }
+      } else { alert("Incorrect PIN!"); }
     }
 
     function setupAdminGrid() {
-      const container = document.getElementById('admin-status-list');
-      container.innerHTML = "";
-      Object.keys(STATUS_DATA).forEach(key => {
+      const list = document.getElementById('admin-routine-list');
+      list.innerHTML = "";
+      Object.keys(ROUTINES_DATA).forEach(key => {
         const div = document.createElement('div');
-        div.className = "admin-item";
-        div.innerText = key;
-        div.onclick = () => selectAdminStatus(key);
-        container.appendChild(div);
+        div.className = "routine-item" + (key === currentRoutineKey ? " active" : "");
+        div.innerHTML = `<span>${ROUTINES_DATA[key].emoji}</span> <span>${key}</span>`;
+        div.onclick = () => {
+          document.querySelectorAll('.routine-item').forEach(i => i.classList.remove('active'));
+          div.classList.add('active');
+          currentRoutineKey = key;
+          document.getElementById('admin-quote-input').value = ROUTINES_DATA[key].quote;
+        };
+        list.appendChild(div);
       });
-      selectAdminStatus(currentStatusKey);
-      document.getElementById('admin-saved-dob').value = localStorage.getItem('sudip_wifey_dob') || "Not entered yet";
+      document.getElementById('admin-quote-input').value = ROUTINES_DATA[currentRoutineKey].quote;
     }
 
-    function selectAdminStatus(key) {
-      currentStatusKey = key;
-      document.getElementById('admin-quote-input').value = STATUS_DATA[key].quote;
+    function addCustomRoutine() {
+      const emoji = document.getElementById('custom-routine-emoji').value.trim() || "✨";
+      const name = document.getElementById('custom-routine-name').value.trim();
+      const quote = document.getElementById('custom-routine-quote').value.trim() || "Doing something special.";
+      if (!name) { alert("Enter a routine name!"); return; }
+
+      ROUTINES_DATA[name] = { emoji, quote };
+      document.getElementById('custom-routine-emoji').value = "";
+      document.getElementById('custom-routine-name').value = "";
+      document.getElementById('custom-routine-quote').value = "";
+      setupAdminGrid();
+      alert(`Routine "${name}" added! Click Save & Sync to publish.`);
     }
 
-    function toggleNotifications() {
-      notificationsEnabled = !notificationsEnabled;
-      document.getElementById('toggle-notif-btn').innerText = notificationsEnabled ? "ON" : "OFF";
+    async function saveAdminChanges() {
+      const q = document.getElementById('admin-quote-input').value;
+      ROUTINES_DATA[currentRoutineKey].quote = q;
+      
+      const feedItem = {
+        name: "Sudip",
+        routine: `${ROUTINES_DATA[currentRoutineKey].emoji} ${currentRoutineKey}`,
+        quote: q,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      await saveGlobalSync(feedItem);
+      closeModal('admin-dashboard-modal');
+      alert("Updated globally! ❤️");
     }
 
-    function updateStatusUI() {
-      const data = STATUS_DATA[currentStatusKey];
-      if (!data) return;
-      document.getElementById('status-title-display').innerText = "Status: " + currentStatusKey;
-      document.getElementById('status-quote-display').innerText = `"${data.quote}"`;
-      document.getElementById('modal-title').innerText = currentStatusKey;
-      document.getElementById('modal-quote').innerText = `"${data.quote}"`;
-      document.getElementById('modal-anim-container').innerHTML = data.html;
-
-      const dotIndicator = document.getElementById('status-dot-indicator');
-      if (currentStatusKey === "Free") {
-        dotIndicator.classList.add('green');
-      } else {
-        dotIndicator.classList.remove('green');
-      }
-    }
-
-    updateStatusUI();
-
-    const headerQuotes = [
-      '"Distance only measures roads, never hearts."',
-      '"No border can stop a heart from remembering someone special."',
-      '"You\'re always closer than the map suggests."'
-    ];
-    let quoteIndex = 0;
-
-    setInterval(() => {
-      const qBox = document.getElementById('quote-display');
-      qBox.style.opacity = '0';
-      setTimeout(() => {
-        quoteIndex = (quoteIndex + 1) % headerQuotes.length;
-        qBox.innerText = headerQuotes[quoteIndex];
-        qBox.style.opacity = '1';
-      }, 500);
-    }, 20000);
-
+    // --- ANNOY & MOOD MODALS ---
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
     function openStatusPopup() { openModal('status-modal'); }
 
-    function initiateAnnoy() {
-      const promptText = document.getElementById('annoy-prompt-text');
-      const confirmBtn = document.getElementById('annoy-confirm-btn');
-
-      if (currentStatusKey === "Working" || currentStatusKey === "Coding") {
-        promptText.innerText = "⚠️ Warning! Sudip is currently busy. He may not reply immediately. Do you still want to annoy him?";
-        confirmBtn.innerText = "❤️ Send Anyway";
-      } else {
-        promptText.innerText = "Are you sure you want to annoy Sudip right now?";
-        confirmBtn.innerText = "❤️ Yes, Annoy Him";
-      }
+    function openAnnoyModal() {
+      document.getElementById('annoy-custom-msg').value = "";
       openModal('annoy-modal');
     }
 
     function executeAnnoy() {
       closeModal('annoy-modal');
+      confetti({ particleCount: 50, spread: 70, origin: { y: 0.7 } });
+      const msg = document.getElementById('annoy-custom-msg').value.trim() || "No custom message.";
 
-      confetti({ particleCount: 50, spread: 70, origin: { y: 0.7 }, colors: ['#ff2a54', '#ffb3c1'] });
+      fetch(FORMSPREE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          title: "❤️ Mrs. Sudip Annoyed You",
+          message: msg,
+          dob: savedWifeyDob,
+          timestamp: new Date().toLocaleString()
+        })
+      }).catch(e => {});
 
-      const responses = [
-        "Mission accomplished. ❤️",
-        "Your message is on its way.",
-        "He'll probably smile when he sees it.",
-        "You definitely stole his attention."
-      ];
-      
-      if (!notificationsEnabled) {
-        alert("Looks like he's unavailable right now, but he'll check in later. ❤️");
-      } else {
-        alert(responses[Math.floor(Math.random() * responses.length)]);
-
-        fetch(FORMSPREE_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({
-            title: "❤️ Mrs. Sudip Annoyed You",
-            message: "Mrs. Sudip pressed the 'Annoy Him' button on the website! Her DOB input was: " + savedWifeyDob,
-            timestamp: new Date().toLocaleString()
-          })
-        }).catch(err => console.log("Formspree alert logged."));
-      }
-
-      startAnnoyCooldown(60);
+      alert("Alert & message sent to Sudip! ❤️");
     }
 
-    function startAnnoyCooldown(seconds) {
-      const btn = document.getElementById('annoy-trigger');
-      const sub = document.getElementById('annoy-sub-text');
-      btn.disabled = true;
+    function openMoodModal() { openModal('mood-modal'); }
 
-      let remaining = seconds;
-      const interval = setInterval(() => {
-        remaining--;
-        const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
-        const secs = String(remaining % 60).padStart(2, '0');
-        sub.innerText = `You can annoy him again in ${mins}:${secs}`;
-
-        if (remaining <= 0) {
-          clearInterval(interval);
-          btn.disabled = false;
-          sub.innerText = "Warning: Don't press this while he's working.";
-        }
-      }, 1000);
+    function selectMood(emoji, name) {
+      selectedMoodData = { emoji, name };
+      document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
     }
 
+    async function submitMoodStatus() {
+      closeModal('mood-modal');
+      confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+      const customText = document.getElementById('mood-msg-input').value.trim();
+      document.getElementById('mood-msg-input').value = "";
+
+      const feedItem = {
+        name: "Mrs. Sudip",
+        routine: `Mood: ${selectedMoodData.emoji} ${selectedMoodData.name}`,
+        quote: customText || "Thinking of you.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      await saveGlobalSync(feedItem);
+
+      fetch(FORMSPREE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          title: "💖 Mrs. Sudip Sent a Mood Update",
+          mood: `${selectedMoodData.emoji} ${selectedMoodData.name}`,
+          message: customText || "None",
+          timestamp: new Date().toLocaleString()
+        })
+      }).catch(e => {});
+
+      alert("Your mood status has been shared globally! ❤️");
+    }
+
+    // --- AMBIENT PARTICLES ---
     const canvas = document.getElementById('ambient-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -1087,21 +1004,16 @@
         this.opacity = Math.random();
       }
       update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
+        this.x += this.speedX; this.y += this.speedY;
         if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
         if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
       }
       draw() {
         ctx.fillStyle = `rgba(255, 42, 84, ${this.opacity})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
       }
     }
-
-    for (let i = 0; i < 45; i++) { particles.push(new Particle()); }
-
+    for (let i = 0; i < 40; i++) particles.push(new Particle());
     function animateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(p => { p.update(); p.draw(); });
